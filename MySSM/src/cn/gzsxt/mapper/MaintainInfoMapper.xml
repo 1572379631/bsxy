@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.gzsxt.mapper.MaintainInfoMapper">
+  <resultMap id="BaseResultMap" type="cn.gzsxt.pojo.MaintainInfo">
+    <id column="mt_id" jdbcType="INTEGER" property="mtId" />
+    <result column="Place_id" jdbcType="INTEGER" property="placeId" />
+    <result column="placeInstallationadd" jdbcType="VARCHAR" property="placeinstallationadd" />
+    <result column="placeInstallationrep" jdbcType="VARCHAR" property="placeinstallationrep" />
+    <result column="SumMoneyadd" jdbcType="VARCHAR" property="summoneyadd" />
+    <result column="SumMoneyrep" jdbcType="VARCHAR" property="summoneyrep" />
+    <result column="mtMaintenance" jdbcType="VARCHAR" property="mtmaintenance" />
+    <result column="mtTimeStart" jdbcType="TIMESTAMP" property="mttimestart" />
+    <result column="mtTimeEnd" jdbcType="TIMESTAMP" property="mttimeend" />
+    <result column="mtDept" jdbcType="VARCHAR" property="mtdept" />
+    <result column="mtPersontell" jdbcType="VARCHAR" property="mtpersontell" />
+    <result column="mtSumMoney" jdbcType="VARCHAR" property="mtsummoney" />
+    <result column="recordTime" jdbcType="TIMESTAMP" property="recordtime" />
+    <result column="approvalPerson" jdbcType="VARCHAR" property="approvalperson" />
+    <!-- 场地表字段 -->
+    <result column="Place_name" jdbcType="VARCHAR" property="placeName" />
+    <result column="Place_lieu" jdbcType="VARCHAR" property="placeLieu" />
+    <result column="Place_division" jdbcType="VARCHAR" property="placeDivision" />
+    <result column="Place_installation" jdbcType="VARCHAR" property="placeInstallation" />
+    <result column="SumMoney" jdbcType="VARCHAR" property="summoney" />
+  	
+  <!-- 审批人字段乱入 -->
+  	<result column="Postulant_name" jdbcType="VARCHAR" property="postulantName" />
+  </resultMap>
+  
+  <!--  -->
+  <insert id="insertPlaceFacility" parameterType="HashMap">
+  	insert into
+  			maintain_info
+	  		(
+			     Place_id,
+			     placeInstallationadd,
+			     placeInstallationrep,
+			     SumMoneyadd,
+			     SumMoneyrep,
+			     mtMaintenance,
+			     mtTimeStart,
+			     mtTimeEnd,
+			     mtDept,
+			     mtPersontell,
+			     mtSumMoney,
+			     recordTime,
+			     approvalPerson
+	  		)
+  		values
+	  		(
+	  			#{ placeId, jdbcType = INTEGER },
+				#{ placeinstallationadd, jdbcType = VARCHAR },
+				#{ placeinstallationrep, jdbcType = VARCHAR },
+				#{ summoneyadd, jdbcType = VARCHAR },
+				#{ summoneyrep, jdbcType = VARCHAR },
+				#{ mtmaintenance, jdbcType = VARCHAR },
+				#{ mttimestart, jdbcType = TIMESTAMP },
+				#{ mttimeend, jdbcType = TIMESTAMP },
+				#{ mtdept, jdbcType = VARCHAR },
+				#{ mtpersontell, jdbcType = VARCHAR },
+				#{ mtsummoney, jdbcType = VARCHAR },
+				#{ recordtime, jdbcType = TIMESTAMP },
+				#{ postulantId, jdbcType = INTEGER }
+				
+	  		)
+  </insert>
+  
+  <!-- 查询所有场地变动信息 -->
+  <select id="queryFaclitiesChange" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  		select
+  			mt_id,
+  			a.Place_id,
+  			Place_installation,
+  			placeInstallationadd,
+			placeInstallationrep,
+			SumMoneyadd,
+			SumMoneyrep,
+			mtMaintenance,
+			mtTimeStart,
+			mtTimeEnd,
+			mtDept,
+			mtPersontell,
+			mtSumMoney,
+			recordTime,
+			approvalPerson,
+			Place_name,
+			Place_lieu,
+			Place_division,
+			postulant_Name,
+			SumMoney
+		from    maintain_info a
+		left join place_info b on a.Place_id = b.Place_id  
+		left join postulantuser_info c on c.Postulant_id = a.approvalPerson
+		<where>
+			<if test="placeDivision !=null and placeDivision !='' ">
+	  			and Place_division = #{placeDivision}
+	  		</if>
+	  		<if test="placeLieu !=null and placeLieu !='' ">
+	  			and Place_lieu = #{placeLieu}
+	  		</if>
+	  		<if test="place_name !=null and place_name !='' ">
+	  			and Place_name like #{place_name}
+	  		</if>
+	  		<if test="mtdept !=null and mtdept !='' ">
+	  			and mtDept like #{mtdept}
+	  		</if>
+		</where>
+		order by recordTime desc
+		limit ${begin},${pagesize}
+  </select>
+  
+  <select id="queryFaclitiesChangeCount" resultType="Integer">
+  		select count(mt_id) from maintain_info a
+  		left join place_info b on a.Place_id = b.Place_id
+  		
+  		<where>
+			<if test="placeDivision !=null and placeDivision !='' ">
+	  			and b.Place_division = #{placeDivision}
+	  		</if>
+	  		<if test="placeLieu !=null and placeLieu !='' ">
+	  			and b.Place_lieu = #{placeLieu}
+	  		</if>
+	  		<if test="place_name !=null and place_name !='' ">
+	  			and b.Place_name like #{place_name}
+	  		</if>
+	  		<if test="mtdept !=null and mtdept !='' ">
+	  			and a.mtDept like #{mtdept}
+	  		</if>
+		</where>
+  </select>
+  
+  <select id="queryFacutilitiesChangSin" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  		
+select
+  			mt_id,
+  			a.Place_id,
+  			Place_installation,
+  			placeInstallationadd,
+			placeInstallationrep,
+			SumMoneyadd,
+			SumMoneyrep,
+			mtMaintenance,
+			str_to_date(mtTimeStart,'%Y-%m-%d %H:%i:%s')as mtTimeStart,
+			str_to_date(mtTimeEnd,'%Y-%m-%d %H:%i:%s')as mtTimeEnd,
+			mtDept,
+			mtPersontell,
+			mtSumMoney,
+			str_to_date(recordTime,'%Y-%m-%d %H:%i:%s')as recordTime,
+			approvalPerson,
+			Place_name,
+			Place_lieu,
+			Place_division,
+			postulant_Name,
+			Place_installation,
+			SumMoney
+		from    
+			maintain_info a
+		left join place_info b on a.Place_id = b.Place_id  
+		left join postulantuser_info c on c.Postulant_id = a.approvalPerson
+  		where mt_id = #{mtId}
+  </select>
+  
+  <delete id="deleteFacutilitiesChangeSin" parameterType="HashMap">
+  		delete from maintain_info
+  		<where>
+  			<if test="mtId!=null and mtId!='' ">
+  				mt_id = #{mtId}
+  			</if>
+  			<if test="mtId==null or mtId=='' ">
+  				mtId = #{mtId}
+  			</if>
+  		</where>
+  </delete>
+  
+</mapper>

@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.gzsxt.mapper.PlaceApplyInfoMapper">
+  <resultMap id="BaseResultMap" type="cn.gzsxt.pojo.PlaceApplyInfo">
+    <id column="Place_apply_id" jdbcType="INTEGER" property="placeApplyId" />
+    <result column="Postulant_id" jdbcType="INTEGER" property="postulantId" />
+    <result column="Team_yesnot" jdbcType="VARCHAR" property="teamYesnot" />
+    <result column="Dept_id" jdbcType="INTEGER" property="deptId" />
+    <result column="Dept_name" jdbcType="VARCHAR" property="deptName" />
+    <result column="Apply_time_start" jdbcType="TIMESTAMP" property="applyTimeStart" />
+    <result column="Apply_time_end" jdbcType="TIMESTAMP" property="applyTimeEnd" />
+    <result column="Place_id" jdbcType="INTEGER" property="placeId" />
+    <result column="Place_purpose" jdbcType="VARCHAR" property="placePurpose" />
+    <result column="Use_result" jdbcType="VARCHAR" property="useResult" />
+    <result column="Place_lieu" jdbcType="VARCHAR" property="placeLieu" />
+    <result column="Reamk" jdbcType="VARCHAR" property="reamk" />
+    <result column="Place_name" jdbcType="VARCHAR" property="placeName" />
+    <result column="Place_division" jdbcType="VARCHAR" property="placeDivision" />
+    <result column="ApplyPlaceType" jdbcType="VARCHAR" property="applyplacetype" />
+    <result column="Apply_time" jdbcType="TIMESTAMP" property="applyTime" />
+    <result column="Apply_status" jdbcType="VARCHAR" property="applyStatus" />
+    <result column="Approval_time" jdbcType="TIMESTAMP" property="approvalTime" />
+    <result column="Approval_person" jdbcType="VARCHAR" property="approvalPerson" />
+    <result column="Principal_tell" jdbcType="VARCHAR" property="principalTell" />
+    <result column="Activity_name" jdbcType="VARCHAR" property="activityName" />
+    <result column="Activity_content" jdbcType="VARCHAR" property="activityContent" />
+    <result column="Activity_nature" jdbcType="VARCHAR" property="activityNature" />
+    <result column="Sponsor" jdbcType="VARCHAR" property="sponsor" />
+    <result column="Participant" jdbcType="VARCHAR" property="participant" />
+    <result column="Participant_Sum" jdbcType="VARCHAR" property="participantSum" />
+    <result column="Advise" jdbcType="VARCHAR" property="advise" />
+   
+  </resultMap>
+  
+  <insert id="insertPlaceApplyInfo" parameterType="java.util.HashMap" >
+  	INSERT INTO
+  	 place_apply_info
+  	 (
+		Postulant_id,
+		Place_id,
+		Team_yesnot,
+		Dept_id,
+		Dept_name,
+		Apply_time_start,
+		Apply_time_end,
+		Place_name,
+		Place_division,
+		Place_lieu,
+		Reamk,
+		ApplyPlaceType,
+		Apply_time,
+		Apply_status,
+		Principal_tell,
+		Activity_name,
+		Activity_content,
+		Activity_nature,
+		Sponsor,
+	    Participant,
+	    Participant_Sum
+  	 )
+  	 values
+  	 (
+		#{ postulantId, jdbcType = VARCHAR },
+		#{ placeId, jdbcType = INTEGER },
+		#{ teamYesnot, jdbcType = VARCHAR },
+		#{ deptId, jdbcType = INTEGER },
+		#{ deptName, jdbcType = VARCHAR },
+		#{ applyTimeStart, jdbcType = TIMESTAMP },
+		#{ applyTimeEnd, jdbcType = TIMESTAMP },
+		#{ placeName, jdbcType = VARCHAR },
+		#{ placeDivision, jdbcType = VARCHAR },
+		#{ placeLieu, jdbcType = VARCHAR },
+		#{ reamk, jdbcType = VARCHAR },
+		#{ ApplyPlaceType, jdbcType = VARCHAR },
+		#{ applyTime, jdbcType = TIMESTAMP },
+		#{ applyStatus, jdbcType = VARCHAR },
+		#{ principalTell, jdbcType = VARCHAR },
+		#{ activityName, jdbcType = VARCHAR },
+		#{ activityContent, jdbcType = VARCHAR },
+		#{ activityNature, jdbcType = VARCHAR },
+		#{ sponsor, jdbcType = VARCHAR },
+		#{ participant, jdbcType = VARCHAR },
+		#{ participantSum, jdbcType = VARCHAR }
+		
+  	 )
+  
+  </insert>
+  
+  <!-- 获取个人场地申请总行数  -->
+  <select id="queryPlaceApplyStatusRowCount" 
+   resultType="Integer">
+  		select count(Place_apply_id) from place_apply_info
+  		<where>
+  			<if test="approvalnum ==1 ">
+	  			Apply_status not in(0)
+	  	</if>
+	  		<if test="placeName !=null and placeName !='' ">
+	  			and Place_name = #{placeName}
+	  		</if>
+	  		<if test="applyTime !=null and applyTime !='' ">
+	  			and date_format(Apply_time,'%Y-%m-%d') like #{applyTime}
+	  		</if>
+	  		<if test="placeDivision !=null and placeDivision !='' ">
+	  			and Place_division = #{placeDivision}
+	  		</if>
+	  		and Postulant_id = #{postulantId}
+  		</where>
+  </select>
+ 
+  
+  <!-- 申请进度查询 -->
+  <select id="queryPlaceApplyStatus" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  	select
+  		Place_apply_id,
+	  	Place_division,
+	  	Place_name,
+	  	Advise,
+	  	str_to_date(Apply_time,'%Y-%m-%d %H:%i:%s')as Apply_time,
+	  	(case Apply_status
+			when '0' then '审批中'
+			when '1' then '审批通过'
+			when '2' then '审批不通过'
+			else '0' end
+		) Apply_status
+  	from
+  		place_apply_info
+  	<where>
+  		<if test="approvalnum ==1 ">
+	  			Apply_status not in(0)
+	  	</if>
+  		<if test="placeName !=null and placeName !='' ">
+  			and Place_name = #{placeName}
+  		</if>
+  		<if test="applyTime !=null and applyTime !='' ">
+  			and date_format(Apply_time,'%Y-%m-%d') like #{applyTime}
+  		</if>
+  		<if test="placeDivision !=null and placeDivision !='' ">
+	  			and Place_division = #{placeDivision}
+	  		</if>
+  		and Postulant_id = #{postulantId}
+  	</where>
+  	order by Apply_time desc
+  	 limit ${begin},${pagesize}
+  </select>
+  
+  <!-- 删除个人申请信息 -->
+  <delete id="detelePlaceAppleStatus" parameterType="java.util.HashMap">
+  	delete 
+  	from
+  		place_apply_info
+  	<where>
+  		<if test="placeApplyId !=null and placeApplyId !='' ">
+  			and Place_apply_id = #{placeApplyId}
+  		</if>
+  		<if test="postulantId !=null and postulantId !='' ">
+  			and Postulant_id = #{postulantId}
+  		</if>
+  		<if test="placeApplyId ==null or placeApplyId =='' ">
+  			and 1>2
+  		</if>
+  		<if test="postulantId ==null or postulantId =='' ">
+  			and 1>2
+  		</if>
+  	</where>
+  </delete>
+  
+  
+  <!--  -->
+  <resultMap id="Reusult_PlaceApple_ResultMap" type="cn.gzsxt.vo.Reusult_PlaceApple">
+    <result column="Place_apply_id"  property="placeApplyId" />
+    <result column="Postulant_id" jdbcType="INTEGER" property="postulantId" />
+    <result column="Postulant_name"  property="postulantName" />
+    <result column="Postulant_dept"  property="postulantDept" />
+    <result column="Postulant_faculte"  property="postulantFaculte" />
+    <result column="Postulant_tell"  property="postulantTell" />
+    <result column="Postulant_emaill"  property="postulantEmaill" />
+    <result column="Place_division"  property="placeDivision" />
+    <result column="Place_lieu"  property="placeLieu" />
+    <result column="Place_name"  property="placeName" />
+    <result column="Team_yesnot"  property="teamYesnot" />
+    <result column="Apply_time_start"  property="applyTimeStart" />
+    <result column="Apply_time_end"  property="applyTimeEnd" />
+    <result column="Place_purpose"  property="placePurpose" />
+    <result column="Use_result"  property="useResult" />
+    <result column="Apply_time"  property="applyTime" />
+    <result column="Approval_person"  property="approvalPerson" />
+    <result column="Approval_time" property="approvalTime" />
+    <result column="Apply_status" jdbcType="VARCHAR" property="applyStatus" />
+    <result column="Advise" jdbcType="VARCHAR" property="advise" />
+     <result column="Place_id"  property="placeId" />
+     <result column="Dept_name" jdbcType="VARCHAR" property="deptName" />
+    <result column="student_num" jdbcType="VARCHAR" property="studentNum" />
+    <result column="student_name" jdbcType="VARCHAR" property="studentName" />
+    
+    <result column="Principal_tell" jdbcType="VARCHAR" property="principalTell" />
+    <result column="Activity_name" jdbcType="VARCHAR" property="activityName" />
+    <result column="Activity_content" jdbcType="VARCHAR" property="activityContent" />
+    <result column="Activity_nature" jdbcType="VARCHAR" property="activityNature" />
+    <result column="Sponsor" jdbcType="VARCHAR" property="sponsor" />
+    <result column="Participant" jdbcType="VARCHAR" property="participant" />
+    <result column="Participant_Sum" jdbcType="VARCHAR" property="participantSum" />
+  </resultMap>
+  <!-- 根据申请单id查询导出信息 -->
+  <select id="queryPlaceApplyById" resultMap="Reusult_PlaceApple_ResultMap" parameterType="java.util.HashMap">
+  		<!-- select 
+  			concat(Place_id)as Place_id,
+  			concat(Place_apply_id)as Place_apply_id,
+  			Postulant_name,
+  			Postulant_dept,
+  			Student_num,
+  			Principal_tell,
+  			Activity_name,
+  			Activity_content,
+  			Activity_nature,
+  			Sponsor,
+  			Participant,
+  			Participant_Sum,
+  			Postulant_faculte,
+  			Postulant_tell,
+  			Postulant_emaill,
+  			Place_division,
+  			Place_lieu,
+  			Place_name,
+  			Team_yesnot,
+  			Apply_time_start,
+  			Apply_time_end,
+  			Place_purpose,
+  			Use_result,
+  			Apply_time,
+  			Approval_time,
+  			Approval_person,
+  			Apply_status,
+  			Advise,
+  			Dept_name,
+  			teacher_name
+  		from place_apply_info a
+        left join postulantuser_info b on a.Postulant_id = b.Postulant_id
+        left join student_info c on b.Postulant_num = c.student_num
+        left join teacher_info d on a.Approval_person = d.teacher_id -->
+        select concat(Place_id)as Place_id, concat(Place_apply_id)as Place_apply_id, 
+Postulant_name, IFNULL(class_name, f.dept_name) as Postulant_dept,IFNULL(teacher_num ,Student_num) as Student_num , Principal_tell, Activity_name, Activity_content, 
+Activity_nature, Sponsor, Participant, Participant_Sum, Postulant_faculte, Postulant_tell, 
+Postulant_emaill, Place_division, Place_lieu, Place_name, Team_yesnot, Apply_time_start, Apply_time_end, 
+Place_purpose, Use_result, Apply_time, Approval_time, Approval_person, Apply_status, Advise, a.Dept_name, teacher_name 
+from place_apply_info a 
+left join postulantuser_info b on a.Postulant_id = b.Postulant_id 
+left join student_info c on b.Postulant_num = c.student_num
+left join class_info d on c.student_class = d.class_num
+left join teacher_info e on b.Postulant_num = e.teacher_num
+left join dept_info f on f.dept_id = e.teacher_dept
+  		where Place_apply_id = #{placeApplyId}
+  </select>
+  
+  <!--待审批或已审批申请单总行数  -->
+  <select id="queryPlaceApplyApprovalNotCount"  parameterType="java.util.HashMap"  resultType="Integer">
+  		select count(Place_apply_id) from place_apply_info
+  		<where>
+  		 	<if test="flagb ==0 ">
+	  		   Apply_status='0'
+	  		</if>
+	  		<if test="flagb ==1 ">
+	  		   Apply_status not in('0')
+	  		</if>
+	  		<if test="placeName !=null and placeName !='' ">
+	  			and Place_name = #{placeName}
+	  		</if>
+	  		<if test="postulantName !=null and postulantName !='' ">
+	  			and Postulant_name  = #{postulantName}
+	  		</if>
+  		</where>
+  </select>
+  
+  <!--待审批申请单查询 或已审批查询 -->
+  <select id="queryPlaceApplyApprovalNot" resultMap="Reusult_PlaceApple_ResultMap" parameterType="java.util.HashMap">
+  		select 
+  			concat(Place_id)as Place_id,
+  			concat(Place_apply_id)as Place_apply_id,
+  			a.Postulant_id,
+  			Postulant_name,
+  			Dept_name,
+  			Postulant_dept,
+  			Postulant_faculte,
+  			Postulant_tell,
+  			Postulant_emaill,
+  			Place_division,
+  			Place_lieu,
+  			Place_name,
+  			Team_yesnot,
+  			DATE_FORMAT(Apply_time_start,'%Y-%m-%d %H:%i:%s') AS Apply_time_start,
+  			DATE_FORMAT(Apply_time_end,'%Y-%m-%d %H:%i:%s') AS Apply_time_end,
+  			Place_purpose,
+  			Use_result,
+  			DATE_FORMAT(Apply_time,'%Y-%m-%d %H:%i:%s') AS Apply_time,
+  			DATE_FORMAT(Approval_time,'%Y-%m-%d %H:%i:%s') AS Approval_time,
+  			Approval_person,
+  			(case Apply_status
+			when '0' then '审批中'
+			when '1' then '审批通过'
+			when '2' then '驳回'
+			else '0' end
+		) Apply_status
+  		from 
+  			place_apply_info a
+        left join 
+        	postulantuser_info b on a.Postulant_id = b.Postulant_id
+  		<where>
+  		 	<if test="flagb ==0 ">
+	  		   Apply_status='0'
+	  		</if>
+	  		<if test="flagb ==1 ">
+	  		   Apply_status not in('0')
+	  		</if>
+  		</where>
+  		order by Apply_time desc
+  	 limit ${begin},${pagesize}
+  </select>
+  
+  <!-- 查询申请单的审批状态 -->
+  <select id="queryPlaceApplyBillStatus" resultType="String" parameterType="java.util.HashMap">
+  	select Apply_status from place_apply_info
+  	where Place_apply_id = #{placeApplyId}
+  </select>
+  
+  <!-- 审批申请单时候更新申请单信息 -->
+  <update id="updateApplyBill" parameterType="java.util.HashMap">
+  		update 
+  		place_apply_info
+  	set
+  		<if test="status==1">
+  			Apply_status = '1',
+  		</if>
+  		<if test="status==2">
+  			Apply_status = '2',
+  			Advise = #{advise},
+  		</if>
+  			Approval_person=#{approvalPerson}
+  		<where>
+  			<if test="placeApplyId !=null or placeApplyId !='' ">
+  				Place_apply_id = #{placeApplyId}
+  			</if>
+  			<if test="placeApplyId ==null or placeApplyId =='' ">
+  				1>3
+  			</if>
+  		</where>
+  </update>
+  
+  <!-- 查询该申请单中是否存在场地Id,用于精确定位场地的使用情况 -->
+  <select id="queryPlaceApplyPlaceId" resultType="String" parameterType="java.util.HashMap">
+		select Place_id from place_apply_info
+  	    where Place_apply_id = #{placeApplyId}
+  </select>
+  
+ <!-- 根据场地名称查询场地审批表中的场地的总记录 -->
+ <select id="queryPlaceStatusFromRowCount" resultType="Integer" parameterType="java.util.HashMap">
+ 		select count(Place_apply_id) from place_apply_info
+ 		where unix_timestamp(Apply_time_end)>unix_timestamp(#{nowtime})
+ 		and ( ${place_name})
+ 		and Apply_status not in('0') 
+ </select>
+ 
+ <!-- 根据场地名称，模糊查询场地 -->
+ <select id="queryPlaceStutas" parameterType="java.util.HashMap" resultMap="Reusult_PlaceApple_ResultMap">
+ 	select 
+ 		Place_division,
+ 		Place_lieu,
+ 		Place_name,
+ 		(case Apply_status 
+			when '0' then '使用中'
+			when '1' then '使用中'
+			else '使用中' end 
+		) Apply_status
+ 		 from place_apply_info
+ 	where unix_timestamp(Apply_time_end)>unix_timestamp(#{nowtime})
+ 	and  (${place_name})
+ 	and Apply_status not in('0')
+ 		
+ </select>
+ 
+ <!-- 查询申请结束时间小于当前时间的场地申请单中的场地id ，用于定时任务-->
+ <select id="getPlaceApplyTablePlaceId" resultType="INTEGER" parameterType="HashMap">
+ 		select 
+ 			Place_id 
+ 		from 
+ 			place_apply_info 
+ 		where unix_timestamp(#{time})>unix_timestamp(Apply_time_end) and Place_id is not Null
+ </select>
+ 
+ <!-- 更新 场地使用状态-->
+ <update id="UpdatePlaceStatus" parameterType="HashMap">
+ 	update 
+ 		place_info 
+ 	set
+ 		<if test="flag==0 ">
+ 		 Place_status ='0'
+ 		</if>
+ 		<if test="flag==1 ">
+ 		 Place_status ='1'
+ 		</if>
+ 	<where>
+ 		<if test="placeId !=null and placeId !='' ">
+ 			Place_id = #{placeId}
+ 		</if>
+ 		<if test="placeId ==null or placeId =='' ">
+ 			1>2
+ 		</if>
+ 		
+ 	</where>
+ </update>
+ 
+  <!-- 查询申请结束时间小于当前时间的场地申请单中的场地id ，用于定时任务-->
+ <select id="getPlaceMtTablePlaceId" resultType="INTEGER" parameterType="HashMap">
+ 		select 
+ 			Place_id 
+ 		from 
+ 			maintain_info 
+ 		where unix_timestamp(#{time})>unix_timestamp(mtTimeEnd) and Place_id is not Null
+ </select>
+ 
+  <!-- 更新 场地维修状态-->
+ <select id="UpdatePlaceStatus2" parameterType="HashMap">
+ 	update 
+ 		place_info 
+ 	set
+ 		Place_status ='1'
+ 	<where>
+ 		<if test="placeId !=null and placeId !='' ">
+ 			Place_id = #{placeId}
+ 		</if>
+ 		<if test="placeId ==null or placeId =='' ">
+ 			1>2
+ 		</if>
+ 	</where>
+ </select>
+</mapper>

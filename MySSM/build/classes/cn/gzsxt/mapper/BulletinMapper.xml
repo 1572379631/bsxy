@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.gzsxt.mapper.BulletinMapper">
+  <resultMap id="BaseResultMap" type="cn.gzsxt.pojo.BulletinInfo">
+    <id column="bulletin_id" jdbcType="INTEGER" property="bulletinId" />
+    <result column="bulletin_con" jdbcType="VARCHAR" property="bulletinCon" />
+  	<result column="bulletin_time" jdbcType="TIMESTAMP" property="bulletinTime" />
+  	<result column="bulletin_person" jdbcType="VARCHAR" property="bulletinPerson" />
+  	
+  </resultMap>
+
+	<insert id="addbulletinInfo" parameterType="HashMap">
+		insert into
+  			bulletin_info
+	  		(
+	  			bulletin_con,
+	  			bulletin_time,
+	  			bulletin_person
+	  		)
+  		values
+	  		(
+				#{ bulletinCon, jdbcType = VARCHAR },
+				#{ time, jdbcType = TIMESTAMP },
+				#{ bulletinPerson, jdbcType = INTEGER }
+	  		)
+	</insert>
+
+	<select id="querybulletinInfoCount" resultType="INTEGER" parameterType="HashMap"> 
+		select 
+			count(bulletin_id) 
+		from  
+			bulletin_info
+	</select>
+	
+	<select id="querybulletinInfo" resultMap="BaseResultMap" parameterType="HashMap">
+		select 
+			bulletin_id,
+			bulletin_con,
+	  		bulletin_time,
+	  		Postulant_name as bulletin_person
+	  	from bulletin_info a left join PostulantUser_info b on a.bulletin_person = b.Postulant_id
+	  	order by bulletin_time desc
+	  	<if test="bb ==null and bb =='' ">
+	  		limit ${begin},${pagesize} 
+	  	</if>
+	  	
+	</select>
+	
+	<delete id="deleteBulletinById" parameterType="HashMap">
+		DELETE 
+		FROM 
+		bulletin_info
+		<where>
+			<if test="bulletinId !=null and bulletinId !='' ">
+			 bulletin_id = #{bulletinId}
+			</if>
+			<if test="bulletinId ==null and bulletinId =='' ">
+			 1>2
+			</if>
+		</where>
+			
+	</delete>
+	
+	<select id="querybulletinInfoById" resultMap="BaseResultMap" parameterType="HashMap">
+		select 
+		    bulletin_id,
+			bulletin_con,
+	  		bulletin_time,
+	  		bulletin_person
+	  	from bulletin_info
+	  	where bulletin_id = #{bulletinId}
+	</select>
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       	http://www.springframework.org/schema/aop 
+	  	http://www.springframework.org/schema/aop/spring-aop.xsd
+	  	http://www.springframework.org/schema/tx
+      	http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+	<!-- 开启组件扫面注解解析器 -->
+	<context:component-scan base-package="cn.gzsxt"></context:component-scan>
+	<context:component-scan base-package="cn.gzsxt.util"></context:component-scan>
+	<!-- 开启IOC注解解析器 -->
+	<context:annotation-config></context:annotation-config>
+
+	<!-- 开启springmvc的注解解析器 ：(包含了注解映射器和注解适配器) -->
+	<mvc:annotation-driven></mvc:annotation-driven>
+	
+	<!--加载静态资源  -->
+	<mvc:default-servlet-handler/>
+	
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	
+	<!-- 配置quartz定时任务开始 -->
+	<bean id="UpdatePlaceStatusClass" class="cn.gzsxt.util.UpdatePlaceStatusClass"></bean> 
+	
+	<bean id="clearDataCronTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="clearDataJobDetail" />
+		<property name="cronExpression" value="*/5 * * * * ?" /><!-- 5秒执行一次-->
+		<!-- <property name="cronExpression" value="0 0/30 9-17 * * ?" /> --><!-- 朝九晚五工作时间内每半小时-->
+	</bean>
+	<!-- 设置定时调度任务 -->
+	<bean id="clearDataJobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="UpdatePlaceStatusClass" />
+		<property name="targetMethod" value="UpdatePlaceStatus" />
+		<!-- 是否允许任务并发执行。当值为false时，表示必须等到前一个线程处理完毕后才再启一个新的线程 -->
+		<property name="concurrent" value="false" />
+	</bean>
+
+	<!--触发器的管理器（在列表中添加定义的触发器） -->
+	<bean id="schedulerFactory"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref local="clearDataCronTrigger" />
+			</list>
+		</property>
+	</bean>
+<!--配置quartz定时任务结束 -->
+
+</beans>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.gzsxt.mapper.PlaceInfoMapper">
+  <resultMap id="BaseResultMap" type="cn.gzsxt.pojo.PlaceInfo">
+    <id column="Place_id" jdbcType="INTEGER" property="placeId" />
+    <result column="Place_name" jdbcType="VARCHAR" property="placeName" />
+    <result column="Place_lieu" jdbcType="VARCHAR" property="placeLieu" />
+    <result column="Place_division" jdbcType="VARCHAR" property="placeDivision" />
+    <result column="Place_status" jdbcType="VARCHAR" property="placeStatus" />
+    <result column="Place_installation" jdbcType="VARCHAR" property="placeInstallation" />
+  	<result column="SumMoney" jdbcType="VARCHAR" property="summoney" />
+  	<result column="Place_addtime" jdbcType="TIMESTAMP" property="placeAddtime" />
+  	<result column="Place_addperson" jdbcType="INTEGER" property="placeAddperson" />
+  	<!--审批人字段乱入  -->
+  	 <result column="Postulant_name" jdbcType="VARCHAR" property="postulantName" />
+  	
+  </resultMap>
+  <!-- 查询场地所属校区 -->
+  <select id="queryPlaceDivision" resultMap="BaseResultMap">
+  	select distinct place_division from place_info
+  </select>
+  
+  <!-- 查询场地方位 -->
+  <select id="queryPlaceLieu" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  	select distinct Place_lieu from place_info where Place_division = #{division}
+  </select>
+  <!--查询场地名称  -->
+  <select id="queryPlaceName" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  	select Place_id, Place_name from place_info where Place_lieu = #{placeName}
+  </select>
+  
+  <!-- 获取可申请的场地总行数 -->
+  <select id="queryPlaceStatusRowCount" 
+   resultType="Integer">
+  		select count(Place_name) from place_info
+  		<where>
+  			<if test="pp ==null or pp =='' "> <!-- 用于区别是否是可申请或不加条件 -->
+	  			place_status=1
+	  		</if>
+	  		<if test="placeDivision !=null and placeDivision !='' ">
+	  			and Place_division = #{placeDivision}
+	  		</if>
+	  		<if test="placeLieu !=null and placeLieu !='' ">
+	  			and Place_lieu = #{placeLieu}
+	  		</if>
+	  		<if test="place_name !=null and place_name !='' ">
+	  			and Place_name like #{place_name}
+	  		</if>
+	  		<if test="placeStatus !=null and placeStatus !='' ">
+	  			and Place_status like #{placeStatus}
+	  		</if>
+  		</where>
+  </select>
+  
+  
+  <!-- 获取场地对象数量 -->
+  <select id="queryPlaceStatus" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  	select 
+		Place_id,
+		  Place_name,
+		  Place_lieu,
+		  Place_division,
+		  (case Place_status
+		  	when '0' then '使用中'
+		  	when '1' then '空闲'
+		  	else '维修中' end
+		  ) Place_status,
+		  Place_installation
+	 from place_info 
+  	<where>
+  		<if test="pp ==null or pp =='' "> <!-- 用于区别是否只查可使用的场地 -->
+	  			place_status=1
+	  		</if>
+  		<if test="placeDivision !=null and placeDivision !='' ">
+  			and Place_division = #{placeDivision}
+  		</if>
+  		<if test="placeLieu !=null and placeLieu !='' ">
+  			and Place_lieu = #{placeLieu}
+  		</if>
+  		<if test="place_name !=null and place_name !='' ">
+  			and Place_name like #{place_name}
+  		</if>
+  		<if test="placeStatus !=null and placeStatus !='' ">
+	  			and Place_status like #{placeStatus}
+	  	</if>
+	  	<if test="placeId !=null and placeId !='' ">
+	  			and Place_id like #{placeId}
+	  	</if>
+  	</where>
+  	 limit ${begin},${pagesize}
+  </select>
+  
+  <!-- 单条场地信息 -->
+  <select id="querySinPlaceInfo" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  	select 
+  		Place_division,
+	  	Place_name,
+	  	Place_Lieu,
+	  	SumMoney,
+	  	Place_installation,
+	  	Place_status
+	  from place_info
+	<where>
+		<if test="placeId !=null and placeId !='' ">
+			Place_id = #{placeId}
+		</if>
+	</where>
+  </select>
+  
+   <!-- 根据id查询场地是否已经被占用 -->
+  <select id="queryPlaceApplyStatusById" resultType="String" parameterType="java.util.HashMap">
+  select Place_status from place_info
+  	    where Place_id = #{placeId}
+  </select>
+  
+  <!-- 根据场地id查询场地信息 -->
+  
+  <select id="queryPlaceEmentInfoById" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  	select 
+		Place_id,
+		  Place_name,
+		  Place_lieu,
+		  Place_division,
+		  SumMoney,
+	  	Place_installation,
+		  (case Place_status
+		  	when '0' then '使用中'
+		  	when '1' then '空闲'
+		  	else '维修中' end
+		  ) Place_status,
+		  Place_installation
+	 from place_info
+	 where Place_id like #{placeId}
+  </select>
+  
+  <!-- 更改场地的使用状态，并更新场地设置字段 -->
+  <update id="updatePlaceStatus" parameterType="HashMap">
+  	update 
+  		place_info
+  	set
+  		Place_installation=#{placeinstallationa}
+  		,SumMoney = #{sumMoney}
+  		<if test="obj==1">
+  			,Place_status='2'
+  			
+  		</if>
+  	<where>
+  		<if test="placeId !=null and placeId !='' ">
+  		  Place_id = #{placeId}
+  		</if>
+  		<if test="placeId==null or placeId=='' ">
+  		  1>2
+  		</if>
+  	</where>
+  </update>
+  
+  <insert id="insertPlaceInfo" parameterType="HashMap">
+  		insert into
+  			place_info
+	  		(
+			     Place_division,
+			     Place_lieu,
+			     Place_name,
+			     SumMoney,
+			     Place_installation,
+			     Place_status,
+			     Place_addtime,
+			     Place_addperson
+	  		)
+  		values
+	  		(
+				#{ placeDivision, jdbcType = VARCHAR },
+				#{ placeLieu, jdbcType = VARCHAR },
+				#{ placeName, jdbcType = VARCHAR },
+				#{ SumMoney, jdbcType = VARCHAR },
+				#{ placeInstallation, jdbcType = VARCHAR },
+				#{ placeStatus, jdbcType = VARCHAR },
+				#{ placeAddtime, jdbcType = TIMESTAMP },
+				#{ placeAddperson, jdbcType = INTEGER }
+	  		)
+  </insert>
+  
+  <!-- 根据场地id查询场地详细信息 -->
+  <select id="queryPlaceinfoByid" resultMap="BaseResultMap" parameterType="java.util.HashMap">
+  		select
+  			Place_division,
+			     Place_lieu,
+			     Place_name,
+			     SumMoney,
+			     Place_installation,
+			     (case Place_status
+				  	when '0' then '使用中'
+				  	when '1' then '空闲'
+				  	else '维修中' end
+				  ) Place_status,
+			     Place_addtime,
+			     Place_addperson,
+				Postulant_name
+			   from place_info a left join 
+			   postulantuser_info b on b.Postulant_id=a.Place_addperson
+	 where Place_id like #{placeId}  
+  			
+  </select>
+</mapper>

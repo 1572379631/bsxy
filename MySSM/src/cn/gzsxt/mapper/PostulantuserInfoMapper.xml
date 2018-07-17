@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.gzsxt.mapper.PostulantuserInfoMapper">
+  <resultMap id="BaseResultMap" type="cn.gzsxt.pojo.PostulantuserInfo">
+    <id column="Postulant_id" jdbcType="INTEGER" property="postulantId" />
+    <result column="Postulant_name" jdbcType="VARCHAR" property="postulantName" />
+    <result column="Postulant_pwd" jdbcType="VARCHAR" property="postulantPwd" />
+    <result column="Postulant_dept" jdbcType="VARCHAR" property="postulantDept" />
+    <result column="Postulant_faculte" jdbcType="VARCHAR" property="postulantFaculte" />
+    <result column="Postulant_emaill" jdbcType="VARCHAR" property="postulantEmaill" />
+    <result column="Postulant_tell" jdbcType="VARCHAR" property="postulantTell" />
+    
+  </resultMap>
+  
+  <!-- 登陆查询校验SQL -->
+  <select id="queryPostulantuserByName" parameterType="HashMap" resultMap="BaseResultMap">
+  		select 
+  			 Postulant_id,
+	  		 Postulant_name
+	  		,Postulant_pwd
+  		from 
+  			<if test="identity =='1' ">
+  			    PostulantUser_info a
+	  			left join student_info b on a.Postulant_num = b.student_num
+	  		</if>
+	  		<if test="identity !='1' ">
+	  		    PostulantUser_info a
+	  			left join teacher_info c on a.Postulant_num = c.teacher_num
+	  		</if>
+  		where
+  			a.Postulant_name = #{postulantName}
+  		and
+  			a.Postulant_pwd = #{postulantPwd}
+  		<if test="identity =='1' ">
+	  			and a.student_num = #{num}
+	  	</if>
+	  	<if test="identity !='1' ">
+	  		and a.Postulant_num = #{num}
+	  	</if>
+  		
+  </select>
+ 
+ <!--注册SQL  -->
+  <insert id="insertPostulantInfo" parameterType="HashMap">
+  		insert into
+  			PostulantUser_info
+	  		(
+		  	     Postulant_name
+		  		,Postulant_pwd
+		  		,Postulant_num
+	  		)
+  		values
+	  		(
+	  			#{ postulantName, jdbcType = VARCHAR },
+				#{ postulantPwd, jdbcType = VARCHAR },
+				#{ num, jdbcType = VARCHAR }
+	  		)
+  </insert>
+  
+  <!-- 注册校验 -->
+	<select id="queryPostulantuserByNameAndId" resultMap="BaseResultMap" parameterType="HashMap">
+		select 
+			Postulant_id
+		from 
+			PostulantUser_info
+		where 
+			Postulant_num = #{num} 
+		and Postulant_name = #{postulantName}
+	
+	</select>  
+  
+  <!-- 根据登陆用户id查询对应的信息，用于申请人信息的修改 -->
+  <select id="queryPostulantuserById" parameterType="HashMap" resultMap="BaseResultMap">
+  	select  
+  		Postulant_id, 
+  		Postulant_name,
+  		Postulant_pwd,
+  		Postulant_tell,
+  		Postulant_emaill,
+  		<if test="identity == 2 ">
+	  		Dept_name as Postulant_dept,
+			faculte_name as Postulant_faculte
+			from PostulantUser_info a 
+			left join teacher_info b on a.Postulant_num = b.teacher_num
+			left join dept_info c on b.teacher_dept = c.Dept_id
+			left join faculte_info d on b.teacher_faculte =d.faculte_num
+  		</if>
+		<if test="identity == 1 ">
+	  		class_name as Postulant_dept,
+			faculte_name as Postulant_faculte
+			from PostulantUser_info a 
+			left join student_info b on a.Postulant_num = b.student_num
+	        left join class_info c on b.student_class = c.class_num
+		    left join faculte_info d on b.student_faculte =d.faculte_num
+  		</if>
+  		<where>
+  			Postulant_id=#{postulantId}
+  			<if test="postulantId==null or postulantId=='' ">
+  				1>2
+  			</if>
+  		</where>
+  		
+  </select>
+  
+  <update id="updatePostulantuser" parameterType="HashMap">
+  	update 
+  		PostulantUser_info
+  	set
+  		Postulant_tell=#{postulantTell},
+  		Postulant_emaill=#{postulantEmaill}
+  		<if test="postulantPwdNew !=null and postulantPwdNew !='' ">
+  			,Postulant_pwd=#{postulantPwdNew}
+  		</if>
+  	<where>
+  		<if test="postulantId!=null and postulantId!='' ">
+  		  Postulant_id = #{postulantId}
+  		</if>
+  		<if test="postulantId==null or postulantId=='' ">
+  		  1>2
+  		</if>
+  	</where>
+  </update>
+  
+  <resultMap id="ApprovalPersonMap" type="cn.gzsxt.vo.Result_person">
+    <result column="Postulant_id" jdbcType="INTEGER" property="postulantId" />
+    <result column="Postulant_name" jdbcType="VARCHAR" property="postulantName" />
+    <result column="Postulant_num" jdbcType="VARCHAR" property="postulantNum" />
+    <result column="Postulant_tell" jdbcType="VARCHAR" property="postulantTell" />
+    <result column="Postulant_emaill" jdbcType="VARCHAR" property="postulantEmaill" />
+    <result column="class_name" jdbcType="VARCHAR" property="className" />
+    <result column="Dept_name" jdbcType="VARCHAR" property="deptName" />
+    <result column="faculte_name" jdbcType="VARCHAR" property="faculteName" />
+    
+  </resultMap>
+  
+  <!-- 查询审批人信息 -->
+  <select id="queryApplyPersonById" parameterType="HashMap" resultMap="ApprovalPersonMap">
+  		select 
+		Postulant_id,
+		 Postulant_name,
+		 Postulant_num, 
+		Postulant_tell, 
+		Postulant_emaill, 
+		class_name, 
+		Dept_name,
+		IFNULL(g.faculte_name,e.faculte_name) as faculte_name
+		from postulantuser_info a 
+		left join student_info b on a.Postulant_num = b.student_num 
+		left join class_info c on b.student_class = c.class_num 
+		left join faculte_info e on b.student_faculte = e.faculte_num
+		left join teacher_info f on f.teacher_num =a.Postulant_num
+		left join dept_info  d on d.dept_num = f.teacher_dept
+		left join faculte_info g on f.teacher_faculte = g.faculte_num
+  	  where Postulant_id = #{postulantId}
+  </select>
+  
+  <update id="updatePersonInfo" parameterType="HashMap">
+  	update 
+  		PostulantUser_info
+  	set
+  		Postulant_tell=#{postulantTell},
+  		Postulant_emaill=#{postulantEmaill}
+  		<if test="postulantPwdNew !=null and postulantPwdNew !='' ">
+  			,Postulant_pwd=#{postulantPwdNew}
+  		</if>
+  	<where>
+  		<if test="postulantId!=null and postulantId!='' ">
+  		  Postulant_id = #{postulantId}
+  		</if>
+  		<if test="postulantId ==null or postulantId=='' ">
+  		  1>2
+  		</if>
+  	</where>
+  </update>
+</mapper>

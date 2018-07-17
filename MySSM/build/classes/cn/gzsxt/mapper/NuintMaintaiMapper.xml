@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.gzsxt.mapper.NuintMaintaiMapper">
+  <resultMap id="BaseResultMap" type="cn.gzsxt.pojo.NuintMaintaiInfo">
+    <id column="mu_id" jdbcType="INTEGER" property="muId" />
+    <result column="mu_name" jdbcType="VARCHAR" property="muName" />
+    <result column="mu_address" jdbcType="VARCHAR" property="muAddress" />
+    <result column="mu_tell" jdbcType="VARCHAR" property="muTell" />
+  </resultMap>
+ 
+ <!-- 维护单位总记录 -->
+ <select id="queryMuInfoCount" resultType="INTEGER" parameterType="HashMap"> 
+ 	select count(mu_id) from maintain_uint_info
+ 	<where>
+ 		<if test="muName !=null and muName !='' ">
+ 			mu_name = #{muName}
+ 		</if>
+ 	</where>
+ </select>
+ 
+ <!-- 维护单位总记录实体 -->
+ <select id="queryMuInfo" resultMap="BaseResultMap" parameterType="HashMap"> 
+ 	select 
+ 	mu_id,
+ 	mu_name,
+ 	mu_address,
+ 	mu_tell
+ 	 from maintain_uint_info
+ 	<where>
+ 		<if test="muName !=null and muName !='' ">
+ 			mu_name = #{muName}
+ 		</if>
+ 	</where>
+ </select>
+ 
+ <insert id="insertNuinMaintai" parameterType="HashMap">
+ 	insert into
+  			maintain_uint_info
+	  		(
+			     mu_name,
+			     mu_address,
+			     mu_tell
+	  		)
+  		values
+	  		(
+				#{ muName, jdbcType = VARCHAR },
+				#{ muAddress, jdbcType = VARCHAR },
+				#{ muTell, jdbcType = VARCHAR }
+	  		)
+ </insert>
+ 
+ <select id="queryMuInfoById" resultMap="BaseResultMap" parameterType="HashMap">
+ 	select mu_id from maintain_uint_info
+ 	where mu_id = #{muId}
+ </select>
+ 
+ <delete id="deleteMuInfoById" parameterType="HashMap">
+ 	delete from maintain_uint_info
+ 	 <where>
+ 	 	<if test="muId !=null and muId !='' ">
+ 	 		mu_id = #{muId}
+ 	 	</if>
+ 	 	<if test="muId ==null or muId =='' ">
+ 	 		1>2
+ 	 	</if>
+ 	 </where>
+ </delete>
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	
+	<!-- 预留配置SQL映射文件 -->
+	<mappers>
+		<mapper resource="cn/gzsxt/mapper/Usermapper.xml"/>
+		<mapper resource="cn/gzsxt/mapper/PlaceApplyInfoMapper.xml"/>
+		<mapper resource="cn/gzsxt/mapper/PlaceInfoMapper.xml"/>
+		<mapper resource="cn/gzsxt/mapper/PostulantuserInfoMapper.xml"/>
+	</mappers>
+	
+</configuration>
